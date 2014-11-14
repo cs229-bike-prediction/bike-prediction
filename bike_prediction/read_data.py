@@ -51,9 +51,18 @@ def get_rides(count):
             rides = rides.append(r)
     return rides
 
+def filter_top_stations(rides, n):
+    g = rides.groupby('StartStation Id').count()['Rental Id'].copy()
+    g.sort(ascending=False)
+    top_stations = g.index[:n].get_values()
+    return rides[rides['StartStation Id'].isin(top_stations)]
+
 def read_data(rides):
-    r = rides.groupby([pd.Grouper(freq=FREQ, level='Start Date'), 'StartStation Name']).apply(f).reset_index()
-    return r.pivot(index='Start Date', columns='StartStation Name').fillna(value=0)
+    r = rides.groupby([pd.Grouper(freq=FREQ, level='Start Date'), 'StartStation Id']).apply(f).reset_index()
+    return r.pivot(index='Start Date', columns='StartStation Id').fillna(value=0)
+    # r = rides.resample('1H', how='count')
+    # d = pd.DataFrame({'count': r['Rental Id']}, index=r.index)
+    return d
 
 def add_weather_features(X):
     weather = pd.read_csv(open('./weather.csv', 'rb'),
@@ -68,9 +77,6 @@ def add_weather_features(X):
     temps = temps.asfreq(FREQ, method='pad')
 
     # Rain and other stuff
-    # e = weather['Events'].astype(str)
-    # print e.dtype
-    # rain = np.char.find(e, 'Rain')
     e = np.asarray(weather['Events'], dtype=np.str_)
 
     rain_index    = np.char.find(e, 'Rain')
@@ -98,6 +104,11 @@ def add_historic_features(usage):
     s_d3 = s_d2.shift(freq=Day(1))
     s_d7 = s_d0.shift(freq=Day(7))
     s_d14 = s_d0.shift(freq=Day(14))
+    # df_d1 = pd.DataFrame({'d1': s_d1})
+    # df_d2 = pd.DataFrame({'d2': s_d2})
+    # df_d3 = pd.DataFrame({'d3': s_d3})
+    # df_d7 = pd.DataFrame({'d7': s_d7})
+    # df_d14 = pd.DataFrame({'d14': s_d14})
     df_d1 = pd.DataFrame(s_d1.stack(), columns=['d1']).unstack()
     df_d2 = pd.DataFrame(s_d2.stack(), columns=['d2']).unstack()
     df_d3 = pd.DataFrame(s_d3.stack(), columns=['d3']).unstack()
@@ -106,18 +117,23 @@ def add_historic_features(usage):
     with_history = pd.concat([usage, df_d1, df_d2, df_d3, df_d7, df_d14], axis=1)
     return with_history
 
+def add_is_weekend(X):
+    is_weekend = pd.DataFrame({'is_weekend': np.array((X.index.weekday==5) | (X.index.weekday==6), np.int)}, index=X.index)
+    return pd.concat([X, is_weekend], axis=1)
+
 def filter_unknown_history(X):
-    f = X[np.isfinite(X['d1'])]
-    f = f[np.isfinite(f['d2'])]
+    # f = X[np.isfinite(X['d1'])]
+    # f = f[np.isfinite(f['d2'])]
     # f = f[np.isfinite(f['d3'])]
-    f = f[np.isfinite(f['d7'])]
-    f = f[np.isfinite(f['d14'])]
+    # f = f[np.isfinite(f['d7'])]
+    f = X[np.isfinite(X['d14'])]
     f = f[np.isfinite(f['count'])]
+    f = f.fillna(0)
     return f
 
 def add_lat_long(X):
     gc.load_all_stations()
-    f = X.join(gc.cache['locs_df'], on='StartStation Name')
+    f = X.join(gc.cache['locs_df'], on='StartStation Id')
     f = f[np.isfinite(f['lats'])]
     return f
 
@@ -125,7 +141,7 @@ def prepare_for_write(X):
     Z = X.copy()
     Z['Y'] = Z['count']
     del Z['count']
-    del Z['StartStation Name']
+    # del Z['StartStation Id']
     return Z
 
 def save_sheet(df):
