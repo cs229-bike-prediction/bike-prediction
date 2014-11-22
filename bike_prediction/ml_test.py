@@ -3,12 +3,13 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 def load_records(csv):
-    recs = np.recfromcsv(csv, names=True, usecols=(1,2,3,4,5,6,7,8,9,10,11,12,13))
+    recs = np.recfromcsv(csv, names=True)
     return recs
 
 def form_XY(recZ):
     station = recZ['startstation_id']
     h1 = np.array(recZ['h1'], np.float)
+    h25 = np.array(recZ['h25'], np.float)
     d1 = np.array(recZ['d1'], np.float)
     d2 = np.array(recZ['d2'], np.float)
     d3 = np.array(recZ['d3'], np.float)
@@ -17,10 +18,11 @@ def form_XY(recZ):
     meantemp = np.array(recZ['mean_temperaturef'], np.float)
     weather = np.array(recZ['weather'], np.float)
     is_weekend = np.array(recZ['is_weekend'], np.float)
+    weekday = np.array(recZ['weekday'], np.float)
     lats = np.array(recZ['lats'], np.float)
     longs = np.array(recZ['longs'], np.float)
 
-    X = np.array([d1, d2, d7, d14, weather, meantemp, lats, longs], np.float).T
+    X = np.array([h25, d1, d2, d3, d7, d14, weather, meantemp, weekday, is_weekend, lats, longs], np.float).T
     Y = recZ['y']
     locs = np.array([lats, longs], np.float).T
 
@@ -86,8 +88,6 @@ def predict_on_station(dataset, k, linregs, poiss, station_id):
 def plot_predicted_vs_real_zoom(predicted, real):
     zoom_l = int(len(predicted)*0.45)
     zoom_r = int(len(predicted)*0.5)
-    print zoom_l
-    print zoom_r
 
     f = plt.figure()
     f.set_figwidth(15)
@@ -95,7 +95,8 @@ def plot_predicted_vs_real_zoom(predicted, real):
     plt.plot(predicted, alpha=0.5, linewidth=2, color='g')
     plt.plot(real, alpha=0.5, linewidth=2, color='r')
     plt.subplot(122)
-    plt.plot(predicted[zoom_l:zoom_r], alpha=0.5, linewidth=2, color='g')
-    plt.plot(real[zoom_l:zoom_r], alpha=0.5, linewidth=2, color='r')
+    plt.plot(predicted[zoom_l:zoom_r], alpha=0.5, linewidth=2, color='g', label='Predicted')
+    plt.plot(real[zoom_l:zoom_r], alpha=0.5, linewidth=2, color='r', label='Real')
+    plt.legend()
     plt.show()
 
