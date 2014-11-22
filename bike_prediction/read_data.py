@@ -89,9 +89,9 @@ def add_weather_features(X):
 
     had_rain    = 1*np.int32(rain_index >= 0)
     had_fog     = 1*np.int32(fog_index >= 0)
-    had_snow    = 1*np.int32(snow_index >= 0)
-    had_hail    = 1*np.int32(hail_index >= 0)
-    had_thunder = 1*np.int32(thunder_index >= 0)
+    had_snow    = 2*np.int32(snow_index >= 0)
+    had_hail    = 2*np.int32(hail_index >= 0)
+    had_thunder = 2*np.int32(thunder_index >= 0)
 
     w_sum = had_rain + had_fog + had_snow + had_hail + had_thunder
     w = pd.Series(w_sum, name='weather', index=weather.index)
@@ -108,6 +108,8 @@ def add_historic_features(usage):
     s_d3 = s_d2.shift(freq=Day(1))
     s_d7 = s_d0.shift(freq=Day(7))
     s_d14 = s_d0.shift(freq=Day(14))
+    s_d21 = s_d0.shift(freq=Day(21))
+    s_d28 = s_d0.shift(freq=Day(28))
     df_h1 = pd.DataFrame(s_h1.stack(), columns=['h1']).unstack()
     df_h25 = pd.DataFrame(s_h25.stack(), columns=['h25']).unstack()
     df_d1 = pd.DataFrame(s_d1.stack(), columns=['d1']).unstack()
@@ -115,7 +117,9 @@ def add_historic_features(usage):
     df_d3 = pd.DataFrame(s_d3.stack(), columns=['d3']).unstack()
     df_d7 = pd.DataFrame(s_d7.stack(), columns=['d7']).unstack()
     df_d14 = pd.DataFrame(s_d14.stack(), columns=['d14']).unstack()
-    with_history = pd.concat([usage, df_h1, df_h25, df_d1, df_d2, df_d3, df_d7, df_d14], axis=1)
+    df_d21 = pd.DataFrame(s_d21.stack(), columns=['d21']).unstack()
+    df_d28 = pd.DataFrame(s_d28.stack(), columns=['d28']).unstack()
+    with_history = pd.concat([usage, df_h1, df_h25, df_d1, df_d2, df_d3, df_d7, df_d14, df_d21, df_d28], axis=1)
     return with_history
 
 def add_weekday(X):
