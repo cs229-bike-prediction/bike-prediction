@@ -20,7 +20,7 @@ def form_XY(recZ):
     lats = np.array(recZ['lats'], np.float)
     longs = np.array(recZ['longs'], np.float)
 
-    X = np.array([d1, d7, d14, weather, lats, longs], np.float).T
+    X = np.array([d1, d2, d7, d14, weather, meantemp, lats, longs], np.float).T
     Y = recZ['y']
     locs = np.array([lats, longs], np.float).T
 
@@ -84,10 +84,13 @@ def predict_on_station(dataset, k, linregs, poiss, station_id):
     # plt.show()
 
 def plot_predicted_vs_real_zoom(predicted, real):
-    zoom_l = int(len(predicted)*0.4)
+    zoom_l = int(len(predicted)*0.45)
     zoom_r = int(len(predicted)*0.5)
+    print zoom_l
+    print zoom_r
 
-    plt.figure()
+    f = plt.figure()
+    f.set_figwidth(15)
     plt.subplot(121)
     plt.plot(predicted, alpha=0.5, linewidth=2, color='g')
     plt.plot(real, alpha=0.5, linewidth=2, color='r')

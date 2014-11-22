@@ -89,9 +89,9 @@ def add_weather_features(X):
 
     had_rain    = 1*np.int32(rain_index >= 0)
     had_fog     = 1*np.int32(fog_index >= 0)
-    had_snow    = 3*np.int32(snow_index >= 0)
-    had_hail    = 4*np.int32(hail_index >= 0)
-    had_thunder = 4*np.int32(thunder_index >= 0)
+    had_snow    = 1*np.int32(snow_index >= 0)
+    had_hail    = 1*np.int32(hail_index >= 0)
+    had_thunder = 1*np.int32(thunder_index >= 0)
 
     w_sum = had_rain + had_fog + had_snow + had_hail + had_thunder
     w = pd.Series(w_sum, name='weather', index=weather.index)
@@ -121,9 +121,10 @@ def add_historic_features(usage):
     with_history = pd.concat([usage, df_h1, df_d1, df_d2, df_d3, df_d7, df_d14], axis=1)
     return with_history
 
-def add_is_weekend(X):
+def add_weekday(X):
     is_weekend = pd.DataFrame({'is_weekend': np.array((X.index.weekday==5) | (X.index.weekday==6), np.int)}, index=X.index)
-    return pd.concat([X, is_weekend], axis=1)
+    day = pd.DataFrame({'weekday': X.index.weekday}, index=X.index)
+    return pd.concat([X, is_weekend, day], axis=1)
 
 def filter_unknown_history(X):
     # f = X[np.isfinite(X['d1'])]
