@@ -26,20 +26,23 @@ def form_XY(recZ):
     X = np.array([h26, d1, d2, d7, d14, weather, meantemp, weekday, is_weekend, lats, longs], np.float).T
     Y = recZ['y']
     locs = np.array([lats, longs], np.float).T
+    cluster_labels = recZ['label']
 
-    return (station, X, Y, locs)
+    return (station, X, Y, locs, cluster_labels)
 
-def divide_dataset(stations, X, Y, locs):
+def divide_dataset(stations, X, Y, locs, labels):
     train_len = int(stations.shape[0]*0.7)
     return {
         'tr_stations': stations[:train_len],
         'tr_X': X[:train_len,:],
         'tr_Y': Y[:train_len],
         'tr_locs': locs[:train_len],
+        'tr_labels': labels[:train_len],
         'tst_stations': stations[train_len:],
         'tst_X': X[train_len:,:],
         'tst_Y': Y[train_len:],
-        'tst_locs': locs[train_len:]
+        'tst_locs': locs[train_len:],
+        'tst_labels': labels[train_len:]
     }
 
 def predict_linreg(k, x_row):
