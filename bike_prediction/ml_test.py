@@ -15,6 +15,8 @@ def form_XY(recZ):
     d3 = np.array(recZ['d3'], np.float)
     d7 = np.array(recZ['d7'], np.float)
     d14 = np.array(recZ['d14'], np.float)
+    d21 = np.array(recZ['d21'], np.float)
+    d28 = np.array(recZ['d28'], np.float)
     meantemp = np.array(recZ['mean_temperaturef'], np.float)
     weather = np.array(recZ['weather'], np.float)
     is_weekend = np.array(recZ['is_weekend'], np.float)
