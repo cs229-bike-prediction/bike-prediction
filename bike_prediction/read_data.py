@@ -6,11 +6,11 @@ from pandas.tseries.offsets import Day, Hour
 
 from bike_prediction import get_coords as gc
 
-FREQ = '2H'
+FREQ = '3H'
 
 def csvs(count):
-    csv_files = os.listdir('./bike-rides/')
-    return map(lambda fn: open(os.path.join('./bike-rides/', fn), 'rb'), csv_files[:count])
+    csv_files = os.listdir('./bike-rides/2013-2014/')
+    return map(lambda fn: open(os.path.join('./bike-rides/2013-2014/', fn), 'rb'), csv_files[:count])
 
 def most_frequent_destination(dests):
     return dests.value_counts().idxmax()
@@ -116,8 +116,7 @@ def add_weather_features(X):
 
 def add_historic_features(usage):
     s_d0 = usage['count']
-    s_h1 = s_d0.shift(freq=Hour(1))
-    s_h25 = s_d0.shift(freq=Hour(25))
+    s_h26 = s_d0.shift(freq=Hour(26))
     s_d1 = s_d0.shift(freq=Day(1))
     s_d2 = s_d1.shift(freq=Day(1))
     s_d3 = s_d2.shift(freq=Day(1))
@@ -125,8 +124,7 @@ def add_historic_features(usage):
     s_d14 = s_d0.shift(freq=Day(14))
     s_d21 = s_d0.shift(freq=Day(21))
     s_d28 = s_d0.shift(freq=Day(28))
-    df_h1 = pd.DataFrame(s_h1.stack(), columns=['h1']).unstack()
-    df_h25 = pd.DataFrame(s_h25.stack(), columns=['h25']).unstack()
+    df_h26 = pd.DataFrame(s_h26.stack(), columns=['h26']).unstack()
     df_d1 = pd.DataFrame(s_d1.stack(), columns=['d1']).unstack()
     df_d2 = pd.DataFrame(s_d2.stack(), columns=['d2']).unstack()
     df_d3 = pd.DataFrame(s_d3.stack(), columns=['d3']).unstack()
@@ -134,7 +132,7 @@ def add_historic_features(usage):
     df_d14 = pd.DataFrame(s_d14.stack(), columns=['d14']).unstack()
     df_d21 = pd.DataFrame(s_d21.stack(), columns=['d21']).unstack()
     df_d28 = pd.DataFrame(s_d28.stack(), columns=['d28']).unstack()
-    with_history = pd.concat([usage, df_h1, df_h25, df_d1, df_d2, df_d3, df_d7, df_d14, df_d21, df_d28], axis=1)
+    with_history = pd.concat([usage, df_h26, df_d1, df_d2, df_d3, df_d7, df_d14, df_d21, df_d28], axis=1)
     return with_history
 
 def add_weekday(X):

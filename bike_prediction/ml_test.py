@@ -8,8 +8,7 @@ def load_records(csv):
 
 def form_XY(recZ):
     station = recZ['startstation_id']
-    h1 = np.array(recZ['h1'], np.float)
-    h25 = np.array(recZ['h25'], np.float)
+    h26 = np.array(recZ['h26'], np.float)
     d1 = np.array(recZ['d1'], np.float)
     d2 = np.array(recZ['d2'], np.float)
     d3 = np.array(recZ['d3'], np.float)
@@ -24,7 +23,7 @@ def form_XY(recZ):
     lats = np.array(recZ['lats'], np.float)
     longs = np.array(recZ['longs'], np.float)
 
-    X = np.array([h25, d1, d2, d3, d7, d14, weather, meantemp, weekday, is_weekend, lats, longs], np.float).T
+    X = np.array([h26, d1, d2, d7, d14, weather, meantemp, weekday, is_weekend, lats, longs], np.float).T
     Y = recZ['y']
     locs = np.array([lats, longs], np.float).T
 
@@ -101,4 +100,3 @@ def plot_predicted_vs_real_zoom(predicted, real):
     plt.plot(real[zoom_l:zoom_r], alpha=0.5, linewidth=2, color='r', label='Real')
     plt.legend()
     plt.show()
-
