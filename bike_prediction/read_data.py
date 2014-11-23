@@ -9,8 +9,8 @@ from bike_prediction import get_coords as gc
 FREQ = '2H'
 
 def csvs(count):
-    csv_files = os.listdir('./bike-rides/2013-2014/')
-    return map(lambda fn: open(os.path.join('./bike-rides/2013-2014/', fn), 'rb'), csv_files[:count])
+    csv_files = os.listdir('./bike-rides/')
+    return map(lambda fn: open(os.path.join('./bike-rides/', fn), 'rb'), csv_files[:count])
 
 def most_frequent_destination(dests):
     return dests.value_counts().idxmax()
@@ -58,6 +58,21 @@ def filter_top_stations(rides, n):
     top_stations = g.index[:n].get_values()
     print top_stations
     return rides[rides['StartStation Id'].isin(top_stations)]
+
+def filter_top_clusters(rides, n1,n2):
+    g = rides.groupby('StartStation Id').count()['Rental Id'].copy()
+    g.sort(ascending=False)
+    top_stations = g.index[n1:n2].get_values()
+    return top_stations
+
+def add_cluster(X,c):
+    nc=len(c)
+    xn=len(X)
+    labels=pd.Series(np.zeros(xn), name='label', index=X.index)
+    X=pd.concat([X,labels],axis=1)
+    for i in range(nc):
+        X['label'][X['StartStation Id'].isin(c[i])]=i 
+    return X
 
 def read_data(rides):
     r = rides.groupby([pd.Grouper(freq=FREQ, level='Start Date'), 'StartStation Id']).apply(f).reset_index()
