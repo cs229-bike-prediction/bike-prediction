@@ -9,8 +9,8 @@ from bike_prediction import get_coords as gc
 FREQ = '3H'
 
 def csvs(count):
-    csv_files = os.listdir('./bike-rides/2013-2014/')
-    return map(lambda fn: open(os.path.join('./bike-rides/2013-2014/', fn), 'rb'), csv_files[:count])
+    csv_files = os.listdir('./bike-rides/all/')
+    return map(lambda fn: open(os.path.join('./bike-rides/all/', fn), 'rb'), csv_files[:count])
 
 def most_frequent_destination(dests):
     return dests.value_counts().idxmax()
@@ -57,7 +57,7 @@ def filter_top_stations(rides, n):
     g.sort(ascending=False)
     top_stations = g.index[:n].get_values()
     print top_stations
-    return rides[rides['StartStation Id'].isin(top_stations)]
+    return (rides[rides['StartStation Id'].isin(top_stations)], top_stations)
 
 def filter_top_clusters(rides, n1,n2):
     g = rides.groupby('StartStation Id').count()['Rental Id'].copy()
@@ -105,8 +105,8 @@ def add_weather_features(X):
     had_rain    = 1*np.int32(rain_index >= 0)
     had_fog     = 1*np.int32(fog_index >= 0)
     had_snow    = 2*np.int32(snow_index >= 0)
-    had_hail    = 2*np.int32(hail_index >= 0)
-    had_thunder = 2*np.int32(thunder_index >= 0)
+    had_hail    = 3*np.int32(hail_index >= 0)
+    had_thunder = 3*np.int32(thunder_index >= 0)
 
     w_sum = had_rain + had_fog + had_snow + had_hail + had_thunder
     w = pd.Series(w_sum, name='weather', index=weather.index)
@@ -116,28 +116,36 @@ def add_weather_features(X):
 
 def add_historic_features(usage):
     s_d0 = usage['count']
-    s_h26 = s_d0.shift(freq=Hour(26))
+    s_h27 = s_d0.shift(freq=Hour(27))
     s_d1 = s_d0.shift(freq=Day(1))
     s_d2 = s_d1.shift(freq=Day(1))
     s_d3 = s_d2.shift(freq=Day(1))
     s_d7 = s_d0.shift(freq=Day(7))
     s_d14 = s_d0.shift(freq=Day(14))
-    s_d21 = s_d0.shift(freq=Day(21))
-    s_d28 = s_d0.shift(freq=Day(28))
-    df_h26 = pd.DataFrame(s_h26.stack(), columns=['h26']).unstack()
+    # s_d21 = s_d0.shift(freq=Day(21))
+    # s_d28 = s_d0.shift(freq=Day(28))
+    df_h27 = pd.DataFrame(s_h27.stack(), columns=['h26']).unstack()
     df_d1 = pd.DataFrame(s_d1.stack(), columns=['d1']).unstack()
     df_d2 = pd.DataFrame(s_d2.stack(), columns=['d2']).unstack()
     df_d3 = pd.DataFrame(s_d3.stack(), columns=['d3']).unstack()
     df_d7 = pd.DataFrame(s_d7.stack(), columns=['d7']).unstack()
     df_d14 = pd.DataFrame(s_d14.stack(), columns=['d14']).unstack()
-    df_d21 = pd.DataFrame(s_d21.stack(), columns=['d21']).unstack()
-    df_d28 = pd.DataFrame(s_d28.stack(), columns=['d28']).unstack()
-    with_history = pd.concat([usage, df_h26, df_d1, df_d2, df_d3, df_d7, df_d14, df_d21, df_d28], axis=1)
+    # df_d21 = pd.DataFrame(s_d21.stack(), columns=['d21']).unstack()
+    # df_d28 = pd.DataFrame(s_d28.stack(), columns=['d28']).unstack()
+    with_history = pd.concat([usage, df_h27, df_d1, df_d2, df_d3, df_d7, df_d14], axis=1)
     return with_history
 
 def add_weekday(X):
     is_weekend = pd.DataFrame({'is_weekend': np.array((X.index.weekday==5) | (X.index.weekday==6), np.int)}, index=X.index)
-    day = pd.DataFrame({'weekday': X.index.weekday}, index=X.index)
+    day = pd.Series(X.index.weekday, name='weekday', index=X.index)
+    if False:
+        holiday = pd.Series(
+              (X.index == '2013-01-01') | (X.index == '2013-03-29') | (X.index == '2013-04-01') | (X.index == '2013-05-06')
+            | (X.index == '2013-05-27') | (X.index == '2013-08-26') | (X.index == '2013-12-25') | (X.index == '2013-12-26')
+            | (X.index == '2014-01-01') | (X.index == '2014-04-18') | (X.index == '2014-04-21') | (X.index == '2014-05-05')
+            | (X.index == '2014-05-26') | (X.index == '2014-08-25'),
+            name='holiday', index=X.index, dtype=int
+        )
     return pd.concat([X, is_weekend, day], axis=1)
 
 def filter_unknown_history(X):
