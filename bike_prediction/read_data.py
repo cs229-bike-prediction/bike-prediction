@@ -116,34 +116,24 @@ def add_weather_features(X):
 
 def add_historic_features(usage):
     s_d0 = usage['count']
-    s_h1 = s_d0.shift(freq=Hour(1))
-    s_h1 = s_d0.shift(freq=Hour(1))
-    s_h2 = s_d0.shift(freq=Hour(2))
-    s_h3 = s_d0.shift(freq=Hour(3))
-    s_h4 = s_d0.shift(freq=Hour(4))
-    s_h5 = s_d0.shift(freq=Hour(5))
-    s_h25 = s_d0.shift(freq=Hour(25))
+
     s_d1 = s_d0.shift(freq=Day(1))
     s_d2 = s_d1.shift(freq=Day(1))
     s_d3 = s_d2.shift(freq=Day(1))
     s_d7 = s_d0.shift(freq=Day(7))
     s_d14 = s_d0.shift(freq=Day(14))
-    # s_d21 = s_d0.shift(freq=Day(21))
-    # s_d28 = s_d0.shift(freq=Day(28))
-    df_h1 = pd.DataFrame(s_h1.stack(), columns=['h1']).unstack()
-    df_h2 = pd.DataFrame(s_h2.stack(), columns=['h2']).unstack()
-    df_h3 = pd.DataFrame(s_h3.stack(), columns=['h3']).unstack()
-    df_h4 = pd.DataFrame(s_h4.stack(), columns=['h4']).unstack()
-    df_h5 = pd.DataFrame(s_h5.stack(), columns=['h5']).unstack()
-    df_h25 = pd.DataFrame(s_h25.stack(), columns=['h25']).unstack()
+
+    dh_list = []
+    for i in range(1,24):
+        dh_list.append(s_d0.shift(freq=Hour(i)).stack().to_frame(name='h%d'%i).unstack())
+
     df_d1 = pd.DataFrame(s_d1.stack(), columns=['d1']).unstack()
     df_d2 = pd.DataFrame(s_d2.stack(), columns=['d2']).unstack()
     df_d3 = pd.DataFrame(s_d3.stack(), columns=['d3']).unstack()
     df_d7 = pd.DataFrame(s_d7.stack(), columns=['d7']).unstack()
     df_d14 = pd.DataFrame(s_d14.stack(), columns=['d14']).unstack()
-    # df_d21 = pd.DataFrame(s_d21.stack(), columns=['d21']).unstack()
-    # df_d28 = pd.DataFrame(s_d28.stack(), columns=['d28']).unstack()
-    with_history = pd.concat([usage, df_h1, df_h2, df_h3, df_h4, df_h5, df_h25, df_d1, df_d2, df_d3, df_d7, df_d14], axis=1)
+
+    with_history = pd.concat([usage, df_d1, df_d2, df_d3, df_d7, df_d14] + dh_list, axis=1)
     return with_history
 
 def add_weekday(X):
