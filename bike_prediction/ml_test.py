@@ -8,7 +8,12 @@ def load_records(csv):
 
 def form_XY(recZ):
     station = recZ['startstation_id']
-    h26 = np.array(recZ['h26'], np.float)
+    h1 = np.array(recZ['h1'], np.float)
+    h2 = np.array(recZ['h2'], np.float)
+    h3 = np.array(recZ['h3'], np.float)
+    h4 = np.array(recZ['h4'], np.float)
+    h5 = np.array(recZ['h5'], np.float)
+    h25 = np.array(recZ['h25'], np.float)
     d1 = np.array(recZ['d1'], np.float)
     d2 = np.array(recZ['d2'], np.float)
     d3 = np.array(recZ['d3'], np.float)
@@ -24,7 +29,9 @@ def form_XY(recZ):
     lats = np.array(recZ['lats'], np.float)
     longs = np.array(recZ['longs'], np.float)
 
-    X = np.array([h26, d1, d2, d7, d14, weather, meantemp, weekday, is_weekend, lats, longs], np.float).T
+    # X = np.array([h1, h2, h3, d1, d2, d7, d14, weather, meantemp,
+    #     weekday, is_weekend, lats, longs], np.float).T
+    X = np.array([h25, h1, h2, h3, h4, h5, d1, d2, d3, d7, weather, meantemp, weekday, is_weekend, lats, longs]).T
     Y = recZ['y']
     locs = np.array([lats, longs], np.float).T
     cluster_labels = recZ['label']
